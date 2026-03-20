@@ -1,0 +1,496 @@
+/* =========================================================
+   Gaming Components Styling
+   ========================================================= */
+
+/* Top Card with holographic effect */
+.topCard {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.topCard::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.03) 50%,
+    transparent 70%
+  );
+  animation: holographicShine 8s linear infinite;
+}
+
+@keyframes holographicShine {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+/* Avatar with neon glow */
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: radial-gradient(circle at 30% 30%, var(--blue2) 0%, var(--purple) 100%);
+  border: 2px solid rgba(77, 124, 255, 0.3);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 20px;
+  color: white;
+  box-shadow: 0 0 30px var(--blue-glow), 0 8px 24px rgba(0, 0, 0, 0.4);
+  position: relative;
+  z-index: 2;
+  animation: avatarPulse 3s ease-in-out infinite;
+}
+
+@keyframes avatarPulse {
+  0%, 100% {
+    box-shadow: 0 0 30px var(--blue-glow), 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 50px var(--blue-glow), 0 12px 32px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Balance items with glow */
+.balanceRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.balanceItem {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.balanceItem::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 999px;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.balanceItem:hover::before {
+  opacity: 1;
+}
+
+.balanceItem:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 192, 67, 0.2);
+}
+
+/* Energy bar with gradient animation */
+.energyCard {
+  padding: 14px 16px;
+}
+
+.energyBar {
+  height: 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  position: relative;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.energyBar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: energyShimmer 2s linear infinite;
+}
+
+@keyframes energyShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.energyFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green) 0%, var(--green2) 50%, var(--green) 100%);
+  background-size: 200% 100%;
+  box-shadow: 
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3),
+    0 0 20px var(--green-glow);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: energyFlow 3s linear infinite;
+  position: relative;
+}
+
+@keyframes energyFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.energyFill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: energyPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes energyPulse {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.energyText {
+  margin-top: 12px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--muted);
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+/* Upgrade cards with 3D effect */
+.upgradeCard {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 200px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+}
+
+.upgradeCard:hover {
+  transform: translateY(-4px) rotateX(2deg);
+}
+
+.upgradeCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--blue-glow), var(--purple-glow));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  filter: blur(20px);
+}
+
+.upgradeCard:hover::before {
+  opacity: 0.5;
+}
+
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.cardTitle {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+  background: linear-gradient(135deg, var(--text-bright), var(--blue2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Icon stub with glow */
+.iconStub {
+  flex: 1;
+  border-radius: 18px;
+  border: 2px dashed rgba(77, 124, 255, 0.3);
+  background: rgba(77, 124, 255, 0.05);
+  display: grid;
+  place-items: center;
+  min-height: 100px;
+  position: relative;
+  overflow: hidden;
+}
+
+.iconStub::before {
+  content: "";
+  position: absolute;
+  inset: -100%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(77, 124, 255, 0.1),
+    transparent
+  );
+  animation: iconStubShine 3s linear infinite;
+}
+
+@keyframes iconStubShine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.iconStub svg {
+  width: 64px;
+  height: 64px;
+  color: var(--blue);
+  filter: drop-shadow(0 0 10px var(--blue-glow));
+  position: relative;
+  z-index: 1;
+}
+
+/* Task cards */
+.tasksCard {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.3s ease;
+}
+
+.tasksCard:hover {
+  background: rgba(20, 25, 40, 0.95);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Big CTA button */
+.bigAction {
+  width: 100%;
+  min-height: 64px;
+  padding: 0 24px;
+  border-radius: 20px;
+  font-size: 20px;
+  letter-spacing: 0.5px;
+  font-weight: 900;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.bigAction::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.bigAction:hover::after {
+  transform: translateX(100%);
+}
+
+/* Notice with neon border */
+.notice {
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 2px solid rgba(77, 124, 255, 0.4);
+  background: rgba(77, 124, 255, 0.1);
+  color: var(--blue2);
+  font-weight: 800;
+  font-size: 14px;
+  box-shadow: 0 0 20px rgba(77, 124, 255, 0.2), inset 0 0 20px rgba(77, 124, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.notice::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+  animation: noticeShine 4s linear infinite;
+}
+
+@keyframes noticeShine {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Overlay with blur */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 26, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  z-index: 1000;
+  animation: overlayFadeIn 0.3s ease;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(20px);
+  }
+}
+
+.overlayCard {
+  width: min(420px, 100%);
+  background: rgba(20, 25, 40, 0.95);
+  border-radius: 24px;
+  padding: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8), 0 0 40px rgba(77, 124, 255, 0.2);
+  backdrop-filter: blur(20px);
+  animation: overlayCardSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes overlayCardSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Fixed bottom action */
+.fixedActionWrap {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(92px + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 60;
+}
+
+.fixedActionInner {
+  width: min(420px, 100%);
+  padding: 0 16px;
+  pointer-events: auto;
+}
+
+/* Shooting track styling */
+.shootTrack {
+  position: relative;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.shootZone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 255, 136, 0.2),
+    rgba(0, 255, 136, 0.4),
+    rgba(0, 255, 136, 0.2)
+  );
+  border-left: 2px solid var(--green);
+  border-right: 2px solid var(--green);
+  box-shadow: 0 0 20px var(--green-glow), inset 0 0 20px rgba(0, 255, 136, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.shootBullet {
+  position: absolute;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  margin-top: -12px;
+  margin-left: -12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--text-bright), var(--blue2));
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 30px var(--blue-glow), 0 4px 12px rgba(0, 0, 0, 0.5);
+  transition: all 0.1s linear;
+  animation: bulletGlow 1s ease-in-out infinite;
+}
+
+@keyframes bulletGlow {
+  0%, 100% {
+    box-shadow: 0 0 30px var(--blue-glow), 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 50px var(--blue-glow), 0 6px 16px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Success/Error states */
+.successNotice {
+  border-color: var(--green);
+  background: rgba(0, 255, 136, 0.15);
+  color: var(--green2);
+  box-shadow: 0 0 30px var(--green-glow), inset 0 0 20px rgba(0, 255, 136, 0.2);
+}
+
+.errorNotice {
+  border-color: var(--danger);
+  background: rgba(255, 77, 106, 0.15);
+  color: #ff8fa3;
+  box-shadow: 0 0 30px rgba(255, 77, 106, 0.3), inset 0 0 20px rgba(255, 77, 106, 0.2);
+}
+
+/* Loading animation */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--text-bright);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}

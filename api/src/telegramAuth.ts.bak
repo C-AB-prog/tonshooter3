@@ -1,0 +1,77 @@
+import crypto from "node:crypto";
+
+/**
+ * Verifies Telegram WebApp initData.
+ * Algorithm: https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
+ *
+ * Важно: если приходит параметр `signature`, его НЕ нужно учитывать при проверке `hash`.
+ */
+export function verifyTelegramInitData(
+  initDataRaw: string,
+  botToken: string,
+): { ok: boolean; reason?: string; keys?: string[]; data?: Record<string, string> } {
+  // Иногда initData может прилететь URL-encoded. Нормализуем.
+  const initData = initDataRaw.includes("%") ? decodeURIComponent(initDataRaw) : initDataRaw;
+
+  const params = new URLSearchParams(initData);
+
+  const hash = params.get("hash");
+  if (!hash) return { ok: false, reason: "missing_hash", keys: Array.from(params.keys()) };
+
+  const pairs: string[] = [];
+  const keys: string[] = [];
+
+  params.forEach((value, key) => {
+    // hash всегда исключаем, signature тоже исключаем (если есть)
+    if (key === "hash" || key === "signature") return;
+    pairs.push(`${key}=${value}`);
+    keys.push(key);
+  });
+
+  pairs.sort(); // сортировка по алфавиту (key=value), ключи уникальны → ок
+  const dataCheckString = pairs.join("\n");
+
+  // secretKey = HMAC_SHA256(botToken, key="WebAppData")  (WebAppData выступает ключом)
+  const secretKey = crypto.createHmac("sha256", "WebAppData").update(botToken).digest();
+  const computedHash = crypto.createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
+
+  if (!timingSafeEqualHex(computedHash, hash)) {
+    return { ok: false, reason: "hash_mismatch", keys };
+  }
+
+  const out: Record<string, string> = {};
+  params.forEach((value, key) => (out[key] = value));
+  return { ok: true, data: out, keys };
+}
+
+function timingSafeEqualHex(a: string, b: string): boolean {
+  const aBuf = Buffer.from(a, "hex");
+  const bBuf = Buffer.from(b, "hex");
+  if (aBuf.length !== bBuf.length) return false;
+  return crypto.timingSafeEqual(aBuf, bBuf);
+}
+
+export type TelegramUser = {
+  id: number;
+  username?: string;
+  first_name?: string;
+  last_name?: string;
+};
+
+export function parseTelegramUser(initDataRaw: string): TelegramUser | null {
+  const initData = initDataRaw.includes("%") ? decodeURIComponent(initDataRaw) : initDataRaw;
+  const params = new URLSearchParams(initData);
+  const userJson = params.get("user");
+  if (!userJson) return null;
+  try {
+    return JSON.parse(userJson);
+  } catch {
+    return null;
+  }
+}
+
+export function parseStartParam(initDataRaw: string): string | null {
+  const initData = initDataRaw.includes("%") ? decodeURIComponent(initDataRaw) : initDataRaw;
+  const params = new URLSearchParams(initData);
+  return params.get("start_param");
+}
