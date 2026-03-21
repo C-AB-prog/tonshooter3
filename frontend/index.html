@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TON SHOOTER</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-dark: #0a0e1a;
+            --bg-darker: #060911;
+            --primary: #00f0ff;
+            --primary-glow: rgba(0, 240, 255, 0.3);
+            --secondary: #ff00ff;
+            --accent: #7000ff;
+            --success: #00ff88;
+            --danger: #ff0055;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-dim: rgba(255, 255, 255, 0.4);
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Animated background */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-gradient {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(112, 0, 255, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(0, 240, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 20%, rgba(255, 0, 255, 0.08) 0%, transparent 50%);
+            animation: bgFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(-10%, -10%) rotate(0deg); }
+            50% { transform: translate(-20%, -20%) rotate(5deg); }
+        }
+
+        .grid-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Glassmorphism elements */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-intense {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+        }
+
+        /* Main container */
+        .app-container {
+            position: relative;
+            z-index: 1;
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 10px var(--primary-glow)); }
+            to { filter: drop-shadow(0 0 20px var(--primary-glow)); }
+        }
+
+        /* Stats display */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 0 20px;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .stat-card {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            text-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .stat-value.energy {
+            color: var(--success);
+            text-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+
+        /* Energy bar */
+        .energy-bar-container {
+            padding: 0 20px;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease-out 0.3s both;
+        }
+
+        .energy-bar-wrapper {
+            position: relative;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 100px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .energy-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--primary));
+            border-radius: 100px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .energy-text {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Content area */
+        .content {
+            flex: 1;
+            padding: 0 20px;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Game screen */
+        .game-card {
+            padding: 40px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .score-display {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .score-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 56px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Timing bar */
+        .timing-bar-container {
+            position: relative;
+            height: 80px;
+            margin: 40px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .timing-track {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+            position: relative;
+        }
+
+        .hit-zone {
+            position: absolute;
+            height: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.2), rgba(0, 255, 136, 0.4), rgba(0, 255, 136, 0.2), transparent);
+            border-left: 2px solid var(--success);
+            border-right: 2px solid var(--success);
+            transition: all 0.3s ease;
+        }
+
+        .slider {
+            position: absolute;
+            width: 6px;
+            height: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            box-shadow: 0 0 30px var(--primary);
+        }
+
+        /* Button */
+        .btn {
+            width: 100%;
+            padding: 18px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            padding: 20px;
+            display: flex;
+            justify-content: space-around;
+            animation: slideUp 0.8s ease-out 0.5s both;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .nav-item {
+            flex: 1;
+            padding: 16px 12px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: rgba(0, 240, 255, 0.1);
+        }
+
+        /* Upgrades */
+        .upgrade-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .upgrade-card {
+            padding: 24px;
+        }
+
+        .upgrade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .upgrade-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .upgrade-level {
+            font-size: 16px;
+            color: var(--primary);
+        }
+
+        .upgrade-cost {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-container">
+        <div class="bg-gradient"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <div class="app-container">
+        <div class="header">
+            <div class="logo">TON SHOOTER</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card glass">
+                <div class="stat-label">Coins</div>
+                <div class="stat-value" id="coins">0</div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-label">Crystals</div>
+                <div class="stat-value" id="crystals">0</div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-label">Energy</div>
+                <div class="stat-value energy" id="energy">100</div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-label">Weapon</div>
+                <div class="stat-value" id="weaponLevel">1</div>
+            </div>
+        </div>
+
+        <div class="energy-bar-container">
+            <div class="energy-bar-wrapper">
+                <div class="energy-bar" id="energyBar" style="width: 100%"></div>
+            </div>
+            <div class="energy-text" id="energyText">100/100</div>
+        </div>
+
+        <div class="content">
+            <!-- Game Screen -->
+            <div id="gameScreen" class="screen active">
+                <div class="game-card glass-intense">
+                    <div class="score-display">
+                        <div class="score-label">Streak</div>
+                        <div class="score-value" id="streak">0</div>
+                    </div>
+
+                    <div class="timing-bar-container">
+                        <div class="timing-track">
+                            <div class="hit-zone" id="hitZone" style="width: 25%; left: 37.5%"></div>
+                            <div class="slider" id="slider" style="left: 0%"></div>
+                        </div>
+                    </div>
+
+                    <button class="btn" id="fireButton">FIRE</button>
+                </div>
+            </div>
+
+            <!-- Upgrades Screen -->
+            <div id="upgradesScreen" class="screen">
+                <div class="upgrade-grid" id="upgradesList">
+                    <div class="loading">Загрузка...</div>
+                </div>
+            </div>
+
+            <!-- Tasks Screen -->
+            <div id="tasksScreen" class="screen">
+                <div class="glass" style="padding: 24px; text-align: center;">
+                    <h2 style="margin-bottom: 16px;">Задания скоро!</h2>
+                    <p style="color: var(--text-secondary);">Подписывайтесь на каналы и получайте награды</p>
+                </div>
+            </div>
+
+            <!-- Profile Screen -->
+            <div id="profileScreen" class="screen">
+                <div class="glass" style="padding: 24px;">
+                    <h2 style="margin-bottom: 20px;">Профиль</h2>
+                    <div id="profileContent" class="loading">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-bar glass">
+            <div class="nav-item active" data-screen="game">Игра</div>
+            <div class="nav-item" data-screen="upgrades">Улучшения</div>
+            <div class="nav-item" data-screen="tasks">Задания</div>
+            <div class="nav-item" data-screen="profile">Профиль</div>
+        </div>
+    </div>
+
+    <script>
+        // Telegram WebApp initialization
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const API_URL = 'YOUR_API_URL_HERE'; // Replace with your backend URL
+
+        // Game state
+        const gameState = {
+            coins: 0,
+            crystals: 0,
+            energy: 100,
+            maxEnergy: 100,
+            weaponLevel: 1,
+            rangeLevel: 1,
+            streak: 0,
+            sliderPosition: 0,
+            sliderDirection: 1,
+            baseHitZoneWidth: 25,
+            currentHitZoneWidth: 25,
+            baseSpeed: 1.5,
+            currentSpeed: 1.5,
+            isPlaying: false,
+            sessionId: null
+        };
+
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const screen = item.dataset.screen;
+                switchScreen(screen);
+                
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        function switchScreen(screen) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screen + 'Screen').classList.add('active');
+            
+            if (screen === 'upgrades') loadUpgrades();
+            if (screen === 'profile') loadProfile();
+        }
+
+        // API calls with Telegram auth
+        async function apiCall(endpoint, options = {}) {
+            const headers = {
+                'Content-Type': 'application/json',
+                'X-Telegram-Init-Data': tg.initData,
+                ...options.headers
+            };
+            
+            const response = await fetch(API_URL + endpoint, {
+                ...options,
+                headers
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'API Error');
+            }
+            
+            return response.json();
+        }
+
+        // Load game state
+        async function loadGameState() {
+            try {
+                const data = await apiCall('/api/game/state');
+                Object.assign(gameState, data);
+                updateUI();
+            } catch (error) {
+                console.error('Failed to load game state:', error);
+                tg.showAlert('Ошибка загрузки данных');
+            }
+        }
+
+        // Game mechanics
+        function startSlider() {
+            if (gameState.isPlaying) return;
+            gameState.isPlaying = true;
+            
+            let lastTime = performance.now();
+            
+            function animate(currentTime) {
+                const deltaTime = (currentTime - lastTime) / 1000;
+                lastTime = currentTime;
+                
+                gameState.sliderPosition += (100 / gameState.currentSpeed) * deltaTime * gameState.sliderDirection;
+                
+                if (gameState.sliderPosition >= 100) {
+                    gameState.sliderPosition = 100;
+                    gameState.sliderDirection = -1;
+                } else if (gameState.sliderPosition <= 0) {
+                    gameState.sliderPosition = 0;
+                    gameState.sliderDirection = 1;
+                }
+                
+                document.getElementById('slider').style.left = gameState.sliderPosition + '%';
+                requestAnimationFrame(animate);
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        async function fire() {
+            const hitZoneLeft = 50 - gameState.currentHitZoneWidth / 2;
+            const hitZoneRight = 50 + gameState.currentHitZoneWidth / 2;
+            const isHit = gameState.sliderPosition >= hitZoneLeft && gameState.sliderPosition <= hitZoneRight;
+            
+            try {
+                const result = await apiCall('/api/game/shoot', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        sliderPosition: gameState.sliderPosition,
+                        hitZoneLeft,
+                        hitZoneRight,
+                        clientTimestamp: Date.now(),
+                        sessionId: gameState.sessionId
+                    })
+                });
+                
+                if (result.isHit) {
+                    gameState.streak++;
+                    tg.HapticFeedback.notificationOccurred('success');
+                } else {
+                    gameState.streak = 0;
+                    tg.HapticFeedback.notificationOccurred('error');
+                }
+                
+                gameState.coins = result.newCoins;
+                gameState.energy = result.newEnergy;
+                updateUI();
+                updateHitZone();
+                
+            } catch (error) {
+                console.error('Shot error:', error);
+                tg.showAlert(error.message);
+            }
+        }
+
+        function updateHitZone() {
+            const shrinkFactor = Math.max(0.3, 1 - gameState.streak * 0.05);
+            gameState.currentHitZoneWidth = gameState.baseHitZoneWidth * shrinkFactor;
+            
+            const hitZone = document.getElementById('hitZone');
+            hitZone.style.width = gameState.currentHitZoneWidth + '%';
+            hitZone.style.left = (50 - gameState.currentHitZoneWidth / 2) + '%';
+            
+            const speedFactor = Math.min(3, 1 + gameState.streak * 0.1);
+            gameState.currentSpeed = gameState.baseSpeed / speedFactor;
+        }
+
+        function updateUI() {
+            document.getElementById('coins').textContent = gameState.coins.toLocaleString();
+            document.getElementById('crystals').textContent = gameState.crystals;
+            document.getElementById('energy').textContent = Math.floor(gameState.energy);
+            document.getElementById('weaponLevel').textContent = gameState.weaponLevel;
+            document.getElementById('streak').textContent = gameState.streak;
+            
+            const energyPercent = (gameState.energy / gameState.maxEnergy) * 100;
+            document.getElementById('energyBar').style.width = energyPercent + '%';
+            document.getElementById('energyText').textContent = `${Math.floor(gameState.energy)}/${gameState.maxEnergy}`;
+        }
+
+        async function loadUpgrades() {
+            try {
+                const data = await apiCall('/api/upgrades/available');
+                const html = `
+                    <div class="upgrade-card glass">
+                        <div class="upgrade-header">
+                            <div class="upgrade-title">⚔️ Оружие</div>
+                            <div class="upgrade-level">Lv ${data.upgrades.weapon.currentLevel}</div>
+                        </div>
+                        <div class="upgrade-cost">💰 ${data.upgrades.weapon.cost?.toLocaleString() || 'MAX'}</div>
+                        <button class="btn" ${!data.upgrades.weapon.available ? 'disabled' : ''} 
+                                onclick="purchaseUpgrade('weapon')">
+                            ${data.upgrades.weapon.available ? 'Улучшить' : data.upgrades.weapon.reason}
+                        </button>
+                    </div>
+                    <div class="upgrade-card glass">
+                        <div class="upgrade-header">
+                            <div class="upgrade-title">🎯 Полигон</div>
+                            <div class="upgrade-level">Lv ${data.upgrades.range.currentLevel}</div>
+                        </div>
+                        <div class="upgrade-cost">💰 ${data.upgrades.range.cost?.toLocaleString() || 'MAX'}</div>
+                        <button class="btn" ${!data.upgrades.range.available ? 'disabled' : ''}
+                                onclick="purchaseUpgrade('range')">
+                            ${data.upgrades.range.available ? 'Улучшить' : data.upgrades.range.reason}
+                        </button>
+                    </div>
+                `;
+                document.getElementById('upgradesList').innerHTML = html;
+            } catch (error) {
+                console.error('Load upgrades error:', error);
+            }
+        }
+
+        async function purchaseUpgrade(type) {
+            try {
+                const result = await apiCall('/api/upgrades/purchase', {
+                    method: 'POST',
+                    body: JSON.stringify({ upgradeType: type })
+                });
+                
+                tg.showAlert('✅ Улучшение куплено!');
+                await loadGameState();
+                await loadUpgrades();
+            } catch (error) {
+                tg.showAlert('❌ ' + error.message);
+            }
+        }
+
+        async function loadProfile() {
+            try {
+                const data = await apiCall('/api/user/profile');
+                const html = `
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">👤 ${data.firstName}</div>
+                        <div style="color: var(--text-secondary);">@${data.username || 'no username'}</div>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-size: 14px; color: var(--text-dim); margin-bottom: 8px;">СТАТИСТИКА</div>
+                        <div>🎯 Точность: ${data.stats.accuracy}%</div>
+                        <div>🔥 Макс. серия: ${data.stats.maxStreak}</div>
+                        <div>📊 Выстрелов: ${data.stats.totalShots}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 14px; color: var(--text-dim); margin-bottom: 8px;">РЕФЕРАЛЬНЫЙ КОД</div>
+                        <div style="font-family: monospace; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px;">
+                            ${data.referralCode}
+                        </div>
+                    </div>
+                `;
+                document.getElementById('profileContent').innerHTML = html;
+            } catch (error) {
+                console.error('Load profile error:', error);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('fireButton').addEventListener('click', fire);
+
+        // Initialize
+        loadGameState();
+        startSlider();
+
+        // Energy regeneration
+        setInterval(() => {
+            if (gameState.energy < gameState.maxEnergy) {
+                gameState.energy = Math.min(gameState.maxEnergy, gameState.energy + (1/300));
+                updateUI();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
